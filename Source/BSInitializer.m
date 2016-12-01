@@ -24,6 +24,8 @@ static NSString *const BSInvalidInitializerException = @"BSInvalidInitializerExc
 
 + (BSInitializer *)initializerWithClass:(Class)type selector:(SEL)selector argumentKeys:(id)firstKey, ... {
     NSMutableArray *argKeys = [NSMutableArray array];
+    
+    // 如何处理变长字段呢？
     AddVarArgsToNSMutableArray(firstKey, argKeys);
     return [[BSInitializer alloc] initWithClass:type selector:selector argumentKeys:argKeys];
 }
@@ -42,12 +44,19 @@ static NSString *const BSInvalidInitializerException = @"BSInvalidInitializerExc
     return [[BSInitializer alloc] initWithClass:type classSelector:selector argumentKeys:keys];
 }
 
-- (id)initWithClass:(Class)type selector:(SEL)selector argumentKeys:(NSArray *)argumentKeys classSelector:(BOOL)isClassSelector {
+- (id)initWithClass:(Class)type selector:(SEL)selector
+       argumentKeys:(NSArray *)argumentKeys
+      classSelector:(BOOL)isClassSelector {
     if (self = [super init]) {
         self.type = type;
         self.selector = selector;
         self.argumentKeys = argumentKeys;
+        
+        // 实例方式，则需要alloc
         self.canAlloc = !isClassSelector;
+        
+        // 类方法
+        // 实力方法
         if (isClassSelector) {
             self.signature = [self.type methodSignatureForSelector:self.selector];
         } else {
@@ -71,6 +80,8 @@ static NSString *const BSInvalidInitializerException = @"BSInvalidInitializerExc
         [NSException raise:BSInvalidInitializerException
                     format:@"%@selector %@ not found on class %@", (self.canAlloc ? @"" : @"class "), NSStringFromSelector(self.selector), NSStringFromClass(self.type), nil];
     }
+    
+    // 验证signature中参数个数的一致性
     NSUInteger signatureArgCount = self.signature.numberOfArguments - 2;
     if (signatureArgCount != self.argumentKeys.count) {
         [NSException raise:BSInvalidInitializerException
@@ -96,7 +107,9 @@ static NSString *const BSInvalidInitializerException = @"BSInvalidInitializerExc
 - (id)bsPerform:(NSArray *)argValues {
     id obj = [self target];
 
+    // obj: 临时创建的
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:self.signature];
+    // 前两个参数：obj, selector?
     [invocation setTarget:obj];
     [invocation setSelector:self.selector];
 
@@ -117,6 +130,7 @@ static NSString *const BSInvalidInitializerException = @"BSInvalidInitializerExc
 }
 
 - (id)nullify:(id)value {
+    // 处理空值
     if (value == [BSNull null]) {
         return nil;
     }

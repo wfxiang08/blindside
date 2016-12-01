@@ -8,6 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A BSInitializer describes an initializer method that Blindside will use when constructing
  * objects of a given class. 
  */
+// 初始化函数记录
 @interface BSInitializer : NSObject 
 
 @property (nonatomic, strong, readonly) Class type;
@@ -102,6 +103,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (BSInitializer *)initializerWithClass:(Class)type classSelector:(SEL)selector argumentKeys:(nullable id)firstKey, ...
     NS_REQUIRES_NIL_TERMINATION;
+
+// 注意宏的定义：
+//      NS_REQUIRES_NIL_TERMINATION
+//      NS_UNAVAILABLE
 
 /**
  * Creates a BSInitializer representing the given class and selector. This is an important method

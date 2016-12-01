@@ -8,6 +8,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
+ * 如何做依赖解析
  * The BSBinder interface is used in configuration of Blindside. Using BSBinder,
  * you tell Blindside how to resolve dependencies.
  *
